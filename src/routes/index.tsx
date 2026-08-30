@@ -94,15 +94,52 @@ function notify(title: string, body: string) {
 }
 
 function Index() {
+  const navigate = useNavigate();
   const now = useNow();
   const [log, setLog] = useState<Log>({});
   const [permission, setPermission] = useState<string>("default");
   const [tick, setTick] = useState(0);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    setLog(readLog());
     if (typeof Notification !== "undefined") setPermission(Notification.permission);
-  }, []);
+
+    const load = async (uid: string) => {
+      await migrateLocalLog(uid);
+      try {
+        setLog(await fetchCloudLog(uid));
+      } catch {
+        setLog(readLog());
+      }
+    };
+
+    supabase.auth.getSession().then(({ data }) => {
+      const session = data.session;
+      setChecking(false);
+      if (!session) {
+        navigate({ to: "/auth" });
+        return;
+      }
+      setUserId(session.user.id);
+      setEmail(session.user.email ?? null);
+      void load(session.user.id);
+    });
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      if (!session) {
+        setUserId(null);
+        navigate({ to: "/auth" });
+        return;
+      }
+      setUserId(session.user.id);
+      setEmail(session.user.email ?? null);
+      void load(session.user.id);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, [navigate]);
+
 
   const today = dayKey(now);
   const times = useMemo(() => timesFor(now), [today]);
