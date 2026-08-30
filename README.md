@@ -1,14 +1,18 @@
-# Welcome to your Lovable project
+# Salah Companion
+
+Crée moi une application pour les 5 prière musulman lorsque ce sera l'heure de prier j'aurais une notif et 10 minute plus tard j'aurais une nouvelle notif avec une question Tu a prier? et je peut répondre oui ou non bassée sur le fuseau horraire de laval canada et chaque semain jai des statistique sur le nombre de priére ratée etc
 
 This project was built with [Lovable](https://lovable.dev).
 
+**Live app**: https://salahstats.lovable.app
+
 ## Build with Lovable
 
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
+Continue developing this project in the [Lovable editor](https://lovable.dev/projects/71fc7eef-ce1f-4853-b747-3789261c7ed4).
 
 - **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
+- **Stay in sync**: every change made in Lovable is committed straight to this repository.
+- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
 
 ## Development
 
@@ -20,10 +24,3 @@ cd <repository-name>
 npm i
 npm run dev
 ```
-
-## Built with
-
-- TanStack Start
-- TypeScript
-- React
-- Tailwind CSS
