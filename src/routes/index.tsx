@@ -41,6 +41,20 @@ export const Route = createFileRoute("/")({
 });
 
 const ASK_DELAY_MS = 10 * 60 * 1000;
+const REMINDER_INTERVAL_MS = 10 * 60 * 1000;
+
+const REMINDERS = [
+  "Souviens-toi de dire Bismillah avant chaque action.",
+  "La prière est le pilier de la religion, ne la néglige pas.",
+  "Un sourire envers ton frère est une sadaqa.",
+  "Dis SubhanAllah, Alhamdulillah, Allahu Akbar 33 fois après chaque prière.",
+  "Le paradis est sous les pieds des mères.",
+  "Cherche le savoir, même jusqu'en Chine.",
+  "La patience est la clé du soulagement.",
+  "Fais du dhikr, cela apaise le cœur.",
+  "Sois bon avec tes voisins, c'est un devoir islamique.",
+  "Le meilleur parmi vous est celui qui est le meilleur envers sa famille.",
+];
 
 function useNow(intervalMs = 1000) {
   const [now, setNow] = useState(() => new Date());
@@ -49,6 +63,22 @@ function useNow(intervalMs = 1000) {
     return () => clearInterval(id);
   }, [intervalMs]);
   return now;
+}
+
+function useRotatingReminder(intervalMs = REMINDER_INTERVAL_MS) {
+  const [index, setIndex] = useState(() => {
+    const start = Math.floor(Date.now() / intervalMs);
+    return start % REMINDERS.length;
+  });
+  useEffect(() => {
+    const update = () => {
+      const next = Math.floor(Date.now() / intervalMs) % REMINDERS.length;
+      setIndex(next);
+    };
+    const id = setInterval(update, 1000);
+    return () => clearInterval(id);
+  }, [intervalMs]);
+  return REMINDERS[index];
 }
 
 function notify(title: string, body: string) {
@@ -115,9 +145,16 @@ function Index() {
 
   const inIframe = typeof window !== "undefined" && window.top !== window.self;
 
+  const reminder = useRotatingReminder();
+
   return (
     <main className="min-h-screen bg-background text-foreground">
       <div className="mx-auto max-w-3xl px-5 pb-20 pt-10">
+        <div className="mb-6 rounded-2xl border border-accent/30 bg-accent/10 p-4 text-center">
+          <p className="text-xs uppercase tracking-widest text-accent">Rappel islamique</p>
+          <p className="mt-1 text-sm font-medium text-card-foreground">{reminder}</p>
+        </div>
+
         <header className="text-center">
           <p className="text-xs uppercase tracking-[0.35em] text-accent">Laval · Québec</p>
           <h1 className="mt-3 font-serif text-4xl font-semibold text-foreground">
