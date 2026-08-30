@@ -43,21 +43,10 @@ export async function currentPermission(): Promise<string> {
   return Notification.permission;
 }
 
-/** Notification immédiate (utilisée surtout sur le web). */
+/** Notification immédiate. Sur natif, les rappels sont déjà planifiés par l'OS. */
 export function notifyNow(title: string, body: string) {
-  if (isNative()) {
-    void (async () => {
-      try {
-        const LN = await localNotifications();
-        await LN.schedule({
-          notifications: [{ id: Math.floor(Math.random() * 100000), title, body }],
-        });
-      } catch {
-        /* ignore */
-      }
-    })();
-    return;
-  }
+  if (isNative()) return;
+
   try {
     if (typeof Notification !== "undefined" && Notification.permission === "granted") {
       new Notification(title, { body, icon: "/favicon.ico" });
