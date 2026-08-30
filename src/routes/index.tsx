@@ -195,10 +195,29 @@ function Index() {
 
   const reminder = useRotatingReminder();
 
+  if (checking || !userId) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">
+        <p className="text-sm">Chargement…</p>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-background text-foreground">
       <div className="mx-auto max-w-3xl px-5 pb-20 pt-10">
+        <div className="mb-6 flex items-center justify-between gap-3 text-xs text-muted-foreground">
+          <span className="truncate">{email}</span>
+          <button
+            onClick={signOut}
+            className="rounded-full border border-border px-3 py-1 transition hover:bg-secondary"
+          >
+            Se déconnecter
+          </button>
+        </div>
+
         <div className="mb-6 rounded-2xl border border-accent/30 bg-accent/10 p-4 text-center">
+
           <p className="text-xs uppercase tracking-widest text-accent">Rappel islamique</p>
           <p className="mt-1 text-sm font-medium text-card-foreground">{reminder}</p>
         </div>
