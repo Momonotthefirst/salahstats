@@ -19,6 +19,13 @@ import {
   writeAnswer,
   type Log,
 } from "@/lib/tracker";
+import {
+  currentPermission,
+  isNative,
+  notifyNow,
+  requestNotificationPermission,
+  scheduleNativePrayerNotifications,
+} from "@/lib/notifications";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -83,15 +90,8 @@ function useRotatingReminder(intervalMs = REMINDER_INTERVAL_MS) {
   return REMINDERS[index];
 }
 
-function notify(title: string, body: string) {
-  try {
-    if (typeof Notification !== "undefined" && Notification.permission === "granted") {
-      new Notification(title, { body, icon: "/favicon.ico" });
-    }
-  } catch {
-    /* ignore */
-  }
-}
+const notify = notifyNow;
+
 
 function Index() {
   const navigate = useNavigate();
