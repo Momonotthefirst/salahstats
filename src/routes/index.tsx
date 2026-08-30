@@ -104,7 +104,10 @@ function Index() {
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    if (typeof Notification !== "undefined") setPermission(Notification.permission);
+    void currentPermission().then((p) => {
+      setPermission(p);
+      if (p === "granted") void scheduleNativePrayerNotifications();
+    });
 
     const load = async (uid: string) => {
       await migrateLocalLog(uid);
@@ -186,12 +189,13 @@ function Index() {
 
 
   const askPermission = async () => {
-    if (typeof Notification === "undefined") return;
-    const res = await Notification.requestPermission();
+    const res = await requestNotificationPermission();
     setPermission(res);
+    if (res === "granted") await scheduleNativePrayerNotifications();
   };
 
-  const inIframe = typeof window !== "undefined" && window.top !== window.self;
+  const inIframe =
+    !isNative() && typeof window !== "undefined" && window.top !== window.self;
 
   const reminder = useRotatingReminder();
 
