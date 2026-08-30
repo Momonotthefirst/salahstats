@@ -1,5 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { fetchCloudLog, migrateLocalLog, saveCloudAnswer } from "@/lib/cloudLog";
 import {
   PRAYERS,
   countdown,
@@ -92,15 +94,52 @@ function notify(title: string, body: string) {
 }
 
 function Index() {
+  const navigate = useNavigate();
   const now = useNow();
   const [log, setLog] = useState<Log>({});
   const [permission, setPermission] = useState<string>("default");
   const [tick, setTick] = useState(0);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    setLog(readLog());
     if (typeof Notification !== "undefined") setPermission(Notification.permission);
-  }, []);
+
+    const load = async (uid: string) => {
+      await migrateLocalLog(uid);
+      try {
+        setLog(await fetchCloudLog(uid));
+      } catch {
+        setLog(readLog());
+      }
+    };
+
+    supabase.auth.getSession().then(({ data }) => {
+      const session = data.session;
+      setChecking(false);
+      if (!session) {
+        navigate({ to: "/auth" });
+        return;
+      }
+      setUserId(session.user.id);
+      setEmail(session.user.email ?? null);
+      void load(session.user.id);
+    });
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      if (!session) {
+        setUserId(null);
+        navigate({ to: "/auth" });
+        return;
+      }
+      setUserId(session.user.id);
+      setEmail(session.user.email ?? null);
+      void load(session.user.id);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, [navigate]);
+
 
   const today = dayKey(now);
   const times = useMemo(() => timesFor(now), [today]);
@@ -135,7 +174,16 @@ function Index() {
 
   const stats = useMemo(() => weekStats(log, now), [log, today, tick]);
 
-  const answer = (p: PrayerName, a: "yes" | "no") => setLog({ ...writeAnswer(today, p, a) });
+  const answer = (p: PrayerName, a: "yes" | "no") => {
+    setLog({ ...writeAnswer(today, p, a) });
+    if (userId) void saveCloudAnswer(userId, today, p, a).catch(() => undefined);
+  };
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    navigate({ to: "/auth" });
+  };
+
 
   const askPermission = async () => {
     if (typeof Notification === "undefined") return;
@@ -147,10 +195,29 @@ function Index() {
 
   const reminder = useRotatingReminder();
 
+  if (checking || !userId) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">
+        <p className="text-sm">Chargement…</p>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-background text-foreground">
       <div className="mx-auto max-w-3xl px-5 pb-20 pt-10">
+        <div className="mb-6 flex items-center justify-between gap-3 text-xs text-muted-foreground">
+          <span className="truncate">{email}</span>
+          <button
+            onClick={signOut}
+            className="rounded-full border border-border px-3 py-1 transition hover:bg-secondary"
+          >
+            Se déconnecter
+          </button>
+        </div>
+
         <div className="mb-6 rounded-2xl border border-accent/30 bg-accent/10 p-4 text-center">
+
           <p className="text-xs uppercase tracking-widest text-accent">Rappel islamique</p>
           <p className="mt-1 text-sm font-medium text-card-foreground">{reminder}</p>
         </div>
