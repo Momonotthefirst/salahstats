@@ -174,7 +174,16 @@ function Index() {
 
   const stats = useMemo(() => weekStats(log, now), [log, today, tick]);
 
-  const answer = (p: PrayerName, a: "yes" | "no") => setLog({ ...writeAnswer(today, p, a) });
+  const answer = (p: PrayerName, a: "yes" | "no") => {
+    setLog({ ...writeAnswer(today, p, a) });
+    if (userId) void saveCloudAnswer(userId, today, p, a).catch(() => undefined);
+  };
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    navigate({ to: "/auth" });
+  };
+
 
   const askPermission = async () => {
     if (typeof Notification === "undefined") return;
