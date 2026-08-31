@@ -328,11 +328,19 @@ function Index() {
                     <p className="text-xs text-muted-foreground">{formatTime(times[p.key])}</p>
                   </div>
                   {a ? (
-                    <span
-                      className={`rounded-full px-3 py-1 text-xs ${a === "yes" ? "bg-accent/20 text-accent" : "bg-destructive/20 text-destructive"}`}
-                    >
-                      {a === "yes" ? "Priée" : "Manquée"}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs ${a === "yes" ? "bg-accent/20 text-accent" : "bg-destructive/20 text-destructive"}`}
+                      >
+                        {a === "yes" ? "Priée" : "Manquée"}
+                      </span>
+                      <button
+                        onClick={() => answer(p.key, a === "yes" ? "no" : "yes")}
+                        className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground transition hover:bg-secondary"
+                      >
+                        Modifier
+                      </button>
+                    </div>
                   ) : (
                     <div className="flex gap-2">
                       <button
