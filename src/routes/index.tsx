@@ -62,7 +62,59 @@ const REMINDERS = [
   "La patience est la clé du soulagement.",
   "Fais du dhikr, cela apaise le cœur.",
   "Sois bon avec tes voisins, c'est un devoir islamique.",
-  "Le meilleur parmi vous est celui qui est le meilleur envers sa famille.",
+];
+
+const HADITHS: { arabic: string; french: string; source: string }[] = [
+  {
+    arabic: "إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ",
+    french: "Les actes ne valent que par leurs intentions.",
+    source: "Boukhari & Muslim",
+  },
+  {
+    arabic: "الصَّلَاةُ عَلَى وَقْتِهَا",
+    french: "La meilleure des œuvres est la prière accomplie à son heure.",
+    source: "Boukhari & Muslim",
+  },
+  {
+    arabic: "الدِّينُ النَّصِيحَةُ",
+    french: "La religion, c'est le conseil sincère.",
+    source: "Muslim",
+  },
+  {
+    arabic: "مَنْ حَسُنَ إِسْلَامُ الْمَرْءِ تَرْكُهُ مَا لَا يَعْنِيهِ",
+    french: "Le bon musulman délaisse ce qui ne le concerne pas.",
+    source: "Tirmidhi",
+  },
+  {
+    arabic: "لَا يُؤْمِنُ أَحَدُكُمْ حَتَّى يُحِبَّ لِأَخِيهِ مَا يُحِبُّ لِنَفْسِهِ",
+    french: "Nul d'entre vous ne croit vraiment tant qu'il n'aime pas pour son frère ce qu'il aime pour lui-même.",
+    source: "Boukhari & Muslim",
+  },
+  {
+    arabic: "الطُّهُورُ شَطْرُ الْإِيمَانِ",
+    french: "La pureté est la moitié de la foi.",
+    source: "Muslim",
+  },
+  {
+    arabic: "أَحَبُّ الأَعْمَالِ إِلَى اللهِ أَدْوَمُهَا وَإِنْ قَلَّ",
+    french: "Les actes les plus aimés d'Allah sont les plus constants, même s'ils sont peu.",
+    source: "Boukhari & Muslim",
+  },
+  {
+    arabic: "الْمُسْلِمُ مَنْ سَلِمَ الْمُسْلِمُونَ مِنْ لِسَانِهِ وَيَدِهِ",
+    french: "Le musulman est celui dont les autres sont à l'abri de sa langue et de sa main.",
+    source: "Boukhari & Muslim",
+  },
+  {
+    arabic: "الْكَلِمَةُ الطَّيِّبَةُ صَدَقَةٌ",
+    french: "Une bonne parole est une aumône.",
+    source: "Boukhari & Muslim",
+  },
+  {
+    arabic: "تَبَسُّمُكَ فِي وَجْهِ أَخِيكَ صَدَقَةٌ",
+    french: "Ton sourire au visage de ton frère est une aumône.",
+    source: "Tirmidhi",
+  },
 ];
 
 function useNow(intervalMs = 1000) {
@@ -199,6 +251,17 @@ function Index() {
 
   const reminder = useRotatingReminder();
 
+  // Le hadith change à chaque prière : on prend la dernière prière passée.
+  const hadithIndex = (() => {
+    let idx = PRAYERS.length - 1; // avant Fajr → hadith de la période d'Isha
+    for (let i = 0; i < PRAYERS.length; i++) {
+      const t = times[PRAYERS[i]!.key];
+      if (t && now.getTime() >= t.getTime()) idx = i;
+    }
+    return Math.min(idx, HADITHS.length - 1);
+  })();
+  const hadith = HADITHS[hadithIndex] ?? HADITHS[0]!;
+
   if (checking || !userId) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">
@@ -220,10 +283,25 @@ function Index() {
           </button>
         </div>
 
-        <div className="mb-6 rounded-2xl border border-accent/30 bg-accent/10 p-4 text-center">
-
-          <p className="text-xs uppercase tracking-widest text-accent">Rappel islamique</p>
-          <p className="mt-1 text-sm font-medium text-card-foreground">{reminder}</p>
+        <div className="mb-6 grid gap-3 md:grid-cols-2">
+          <div className="rounded-2xl border border-accent/30 bg-accent/10 p-4 text-center">
+            <p className="text-xs uppercase tracking-widest text-accent">Rappel islamique</p>
+            <p className="mt-1 text-sm font-medium text-card-foreground">{reminder}</p>
+          </div>
+          <div className="rounded-2xl border border-border bg-card p-4">
+            <p className="text-xs uppercase tracking-widest text-accent">
+              Hadith · période {PRAYERS[hadithIndex]!.label}
+            </p>
+            <p
+              dir="rtl"
+              className="mt-2 text-right font-serif text-lg leading-relaxed text-card-foreground"
+            >
+              {hadith.arabic}
+            </p>
+            <p className="mt-2 text-xs italic text-muted-foreground">
+              « {hadith.french} » — {hadith.source}
+            </p>
+          </div>
         </div>
 
         <header className="text-center">
