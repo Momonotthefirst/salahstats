@@ -255,7 +255,8 @@ function Index() {
   const hadithIndex = (() => {
     let idx = PRAYERS.length - 1; // avant Fajr → hadith de la période d'Isha
     for (let i = 0; i < PRAYERS.length; i++) {
-      if (now.getTime() >= times[PRAYERS[i].key].getTime()) idx = i;
+      const t = times[PRAYERS[i]!.key];
+      if (t && now.getTime() >= t.getTime()) idx = i;
     }
     return Math.min(idx, HADITHS.length - 1);
   })();
