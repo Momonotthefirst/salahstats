@@ -257,9 +257,9 @@ function Index() {
     for (let i = 0; i < PRAYERS.length; i++) {
       if (now.getTime() >= times[PRAYERS[i].key].getTime()) idx = i;
     }
-    return idx;
+    return Math.min(idx, HADITHS.length - 1);
   })();
-  const hadith = HADITHS[hadithIndex];
+  const hadith = HADITHS[hadithIndex] ?? HADITHS[0]!;
 
   if (checking || !userId) {
     return (
@@ -289,7 +289,7 @@ function Index() {
           </div>
           <div className="rounded-2xl border border-border bg-card p-4">
             <p className="text-xs uppercase tracking-widest text-accent">
-              Hadith · période {PRAYERS[hadithIndex].label}
+              Hadith · période {PRAYERS[hadithIndex]!.label}
             </p>
             <p
               dir="rtl"
